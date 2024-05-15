@@ -2,7 +2,7 @@ import pygame
 from player1 import Player1
 from projectile import Projectile
 from player2 import Player2
-
+import math
 pygame.font.init()
 
 width = 1000
@@ -59,10 +59,10 @@ def main():
     while run:
         clock.tick(60)
         
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                run = False
-                pygame.quit()
+        # for event in pygame.event.get():
+        #     if event.type == pygame.QUIT:
+        #         run = False
+        #         pygame.quit()
 
         
 
@@ -91,7 +91,10 @@ def main():
                     w = "p1"                
                     
                 else:
-                    p2.health -= 10
+                    if bullet.radius == 20:
+                        p2.health -= 20
+                    else:                        
+                        p2.health -= 10
 
       
         for bullet in bullets2:
@@ -105,19 +108,59 @@ def main():
                     state = 0
                     w = "p2"
                 else:
-                    p1.health -= 10
+                    if bullet.radius == 20:
+                        p1.health -= 20
+                    else:                        
+                        p1.health -= 10
         
         keys = pygame.key.get_pressed()
 
-        if keys[pygame.K_SPACE] and can_shoot1:  
-            bullets1.append(Projectile(round(p1.x + p1.width // 2), round(p1.y + p1.height // 2), 6, (0, 0, 0)))             
-            can_shoot1 = False
-            shoot_timer1 = pygame.time.get_ticks()
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and can_shoot1:
+                # Space key is pressed
+                s = pygame.time.get_ticks()  # Record the start time
+                print("Space pressed")
+                
+            elif event.type == pygame.KEYUP and event.key == pygame.K_SPACE:
+                # Space key is released
+                e = pygame.time.get_ticks()  # Record the end time
+                time_held = e - s  # Calculate the duration of the key press
+                print(time_held)
+                
+                if time_held < 1000:  # Short press
+                    # Do something for short press
+                   
+                    bullets1.append(Projectile(round(p1.x + p1.width // 2), round(p1.y + p1.height // 2), 6, (0, 0, 0)))             
+                    can_shoot1 = False
+                    shoot_timer1 = pygame.time.get_ticks()
+                    
+                elif time_held>1000:
 
-        if keys[pygame.K_v] and can_shoot2:  
-            bullets2.append(Projectile(round(p2.x + p2.width // 2), round(p2.y + p2.height // 2), 6, (0, 0, 0)))             
-            can_shoot2 = False
-            shoot_timer2 = pygame.time.get_ticks()
+                    bullets1.append(Projectile(round(p1.x + p1.width // 2), round(p1.y + p1.height // 2), 20, (0, 0, 0)))   
+                    
+
+
+            # for P2
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_t and can_shoot1:
+                # t is pressed
+                s = pygame.time.get_ticks()  # Record the start time
+                
+            elif event.type == pygame.KEYUP and event.key == pygame.K_t:
+                # t is released
+                e = pygame.time.get_ticks()  # Record the end time
+                time_held = e - s  # Calculate the duration of the key press
+                
+                if time_held < 1000:  # Short press
+                    # Do something for short press
+                    print("Short press")
+                    bullets2.append(Projectile(round(p2.x + p2.width // 2), round(p2.y + p2.height // 2), 6, (0, 0, 0)))             
+                    can_shoot1 = False
+                    shoot_timer2 = pygame.time.get_ticks()
+                    
+                elif time_held>1000:
+
+                    bullets2.append(Projectile(round(p2.x + p2.width // 2), round(p2.y + p2.height // 2), 20, (0, 0, 0)))   
+                    print("Long press")
 
         if not can_shoot1 and pygame.time.get_ticks() - shoot_timer1 >= shoot_delay:
             can_shoot1 = True
