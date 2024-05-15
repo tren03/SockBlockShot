@@ -2,7 +2,8 @@ import pygame
 from player1 import Player1
 from projectile import Projectile
 from player2 import Player2
-import math
+
+
 pygame.font.init()
 
 width = 1000
