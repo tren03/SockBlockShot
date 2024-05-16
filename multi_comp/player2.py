@@ -1,7 +1,7 @@
 import pygame
 
-width = 1000
-height = 1000
+width = 500
+height = 500
 
 health_bar_height = 5
 

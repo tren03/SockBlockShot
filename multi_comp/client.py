@@ -2,8 +2,8 @@ import pygame
 from network import Network
 from projectile import Projectile
 
-width = 1000
-height = 1000
+width = 500
+height = 500
 win = pygame.display.set_mode((width, height))
 pygame.display.set_caption("Client")
 
@@ -26,9 +26,6 @@ def main():
     run = True
     n = Network()
     p1 = n.getP()
-
-    print(type(p1))
-    print(p1.name)
 
     clock = pygame.time.Clock()
 
