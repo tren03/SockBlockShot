@@ -15,7 +15,7 @@ class Player1():
         self.color = color
         self.rect = (x,y,width,height)
         self.vel = 10
-        self.health = 100
+        self.opp_health = 100
         self.bullets = []
         self.can_shoot = True
         self.shoot_timer = 0
@@ -23,12 +23,18 @@ class Player1():
         self.win_state = False
 
     def draw(self, win):
-        pygame.draw.rect(win, 'red', (0, 0, width, health_bar_height))
-        # Calculate the width of the green health bar based on the player's health
-        health_bar_width = (self.health / 100) * width
-        pygame.draw.rect(win, 'green', (0,0, health_bar_width, health_bar_height))
-        pygame.draw.rect(win, self.color, self.rect)
+        # pygame.draw.rect(win, 'red', (0, 0, width, health_bar_height))
+        # # Calculate the width of the green health bar based on the player's health
+        # health_bar_width = (self.health / 100) * width
+        # pygame.draw.rect(win, 'green', (0,0, health_bar_width, health_bar_height))
+        # pygame.draw.rect(win, self.color, self.rect)
 
+        # pygame.draw.rect(win, self.color, self.rect)
+
+        pygame.draw.rect(win, 'red', (0, height-health_bar_height, width, health_bar_height))
+        # Calculate the width of the green health bar based on the player's health
+        health_bar_width = (self.opp_health / 100) * width
+        pygame.draw.rect(win, 'green', (0, height-health_bar_height, health_bar_width, health_bar_height))
         pygame.draw.rect(win, self.color, self.rect)
 
     def move(self):

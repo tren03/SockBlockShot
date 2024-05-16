@@ -26,6 +26,7 @@ def main():
     run = True
     n = Network()
     p1 = n.getP()
+
     print(type(p1))
     print(p1.name)
 
@@ -34,6 +35,7 @@ def main():
     while run:
         clock.tick(60)
         p2 = n.send(p1)
+        print(f'opp_health : {p1.opp_health}')
         
 
         for event in pygame.event.get():
@@ -76,22 +78,6 @@ def main():
                 else:
                     p1.bullets.remove(bullet)
 
-            for bullet in p1.bullets:
-                # Create a bounding rectangle for the circle projectile
-                bullet_rect = pygame.Rect(bullet.x - bullet.radius, bullet.y - bullet.radius, bullet.radius * 2, bullet.radius * 2)
-                
-                p2_rect = pygame.Rect(p2.x,p2.y,p2.width,p2.height)
-                if p2_rect.colliderect(bullet_rect):
-                    p1.bullets.remove(bullet)
-                    if(p2.health < 0):   
-                        state = 0
-                        p1.win_state = True              
-                        
-                    else:
-                        if bullet.radius == 20:
-                            p2.health -= 20
-                        else:                        
-                            p2.health -= 10
 
 
 
@@ -103,26 +89,24 @@ def main():
                     p1.bullets.remove(bullet)
 
 
-            for bullet in p1.bullets:
+        for bullet in p1.bullets:
                 # Create a bounding rectangle for the circle projectile
                 bullet_rect = pygame.Rect(bullet.x - bullet.radius, bullet.y - bullet.radius, bullet.radius * 2, bullet.radius * 2)
                 
                 p2_rect = pygame.Rect(p2.x,p2.y,p2.width,p2.height)
                 if p2_rect.colliderect(bullet_rect):
                     p1.bullets.remove(bullet)
-                    if(p2.health < 0):
+                    if(p1.opp_health < 0):
                         state = 0
                         p1.win_state = True
                     else:
                         if bullet.radius == 20:
-                            p2.health -= 20
+                            p1.opp_health -= 20
                         else:                        
-                            p2.health -= 10
+                            p1.opp_health -= 10
                     
 
 
-        
-        print(f"my health {p1.health} opp heal : {p2.health}")
         p1.move()
         redrawWindow(win, p1, p2)
 
