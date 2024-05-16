@@ -6,7 +6,21 @@ width = 500
 height = 500
 win = pygame.display.set_mode((width, height))
 pygame.display.set_caption("Client")
+pygame.font.init()
+font = pygame.font.Font(None, 36)
 
+
+def display_popup(message):
+    popup_text = font.render(message, True, (255, 255, 255))
+    popup_rect = popup_text.get_rect(center=(width // 2, height // 2))
+    
+    # Draw background for the popup
+    pygame.draw.rect(win, (0, 0, 0), (popup_rect.x - 10, popup_rect.y - 10, popup_rect.width + 20, popup_rect.height + 20))
+    
+    # Draw the popup text
+    win.blit(popup_text, popup_rect)
+    
+    pygame.display.update()
 
 def redrawWindow(win,player1, player2):
     win.fill((255,255,255))
@@ -26,6 +40,7 @@ def main():
     run = True
     n = Network()
     p1 = n.getP()
+    w = None
 
     clock = pygame.time.Clock()
 
@@ -95,16 +110,33 @@ def main():
                     p1.bullets.remove(bullet)
                     if(p1.opp_health < 0):
                         state = 0
-                        p1.win_state = True
+                        p1.opp_win_state = False
                     else:
                         if bullet.radius == 20:
                             p1.opp_health -= 20
                         else:                        
                             p1.opp_health -= 10
-                    
+
+        keys = pygame.key.get_pressed()
+
+        if p1.opp_win_state == False:
+            w = p1
+        elif p2.opp_win_state == False:
+            w = p2
+        else:
+            w = None
+
+        if w:
+            display_popup(f"{w.color} won the game \n Press q to quit")
+         
+            if keys[pygame.K_q]:
+                
+                pygame.quit()
+
+        else:                  
 
 
-        p1.move()
-        redrawWindow(win, p1, p2)
+            p1.move()
+            redrawWindow(win, p1, p2)
 
 main()

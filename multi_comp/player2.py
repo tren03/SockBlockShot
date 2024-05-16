@@ -20,7 +20,7 @@ class Player2():
         self.can_shoot = True
         self.shoot_timer = 0
         self.shoot_delay = 90
-        self.win_state = False
+        self.opp_win_state = True
 
     def draw(self, win):
         # pygame.draw.rect(win, 'red', (0, height-health_bar_height, width, health_bar_height))
