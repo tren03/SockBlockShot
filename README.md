@@ -1,6 +1,9 @@
 # SockBlockShot
 
-![Screencast](https://github.com/tren03/pyg/assets/82367813/bdbd9769-42c9-4f04-b3eb-273510c6c0e6)
+
+![game_gif](https://github.com/tren03/SockBlockShot/assets/82367813/ff3852b8-2ec1-4cb6-a5b0-ed3662b98794)
+
+
 
 ## Table of Contents
 - [Introduction](#introduction)
