@@ -7,6 +7,7 @@
 
 ## Table of Contents
 - [Introduction](#introduction)
+- [Architecture](#architecture)
 - [Features](#features)
 - [Installation](#installation)
 - [Usage](#usage)
@@ -18,6 +19,10 @@
 
 ## Introduction
 This project was developed to provide a hands-on understanding of TCP socket programming. The game is designed to run on your local area network (LAN) and demonstrates how to establish connections between clients and a server, and how to send and receive data using TCP sockets.
+
+## Architecture
+![image](https://github.com/tren03/SockBlockShot/assets/82367813/f2733cdd-2a28-4ea5-a27e-dd21411080f7)
+
 
 ## Features
 - **Multiplayer Support**: Connect multiple clients to the server within the same local network.
