@@ -66,7 +66,11 @@ The game uses a custom protocol for communication between the client and the ser
 - `pickle` for object serialization
 
 ## Contributing
-Contributions are welcome! Please open an issue or submit a pull request for any improvements or bug fixes.
+The game still has some features pending
+- adding a scoreboard
+- restart and winner banner needs some work
+- making the UI more appealing
+- allowing server to handle multiple game sessions
 
 ## License
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
