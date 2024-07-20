@@ -4,7 +4,7 @@ from _thread import *
 from player1 import Player1
 from player2 import Player2
 
-server = "192.168.86.26"
+server = "172.17.0.1"
 port = 5555
 height = 500
 width = 500
@@ -21,26 +21,31 @@ print("Waiting for a connection, Server Started")
 
  
 players = [Player1(10, 10, 50, 50, 'red'),Player2(0,height - 50,50,50,'blue')]
+clients = []    
 
-def threaded_client(conn, player):
+def threaded_client(conn, player):    
     conn.send(pickle.dumps(players[player]))
+    clients.append((conn, addr))
     reply = ""
     while True:
         try:
             data = pickle.loads(conn.recv(2048))
-            players[player] = data
-
-            if not data:
-                print("Disconnected")
-                break
+            if data == 'LIST':
+                reply = clients
             else:
-                if player == 1:
-                    reply = players[0]
-                else:
-                    reply = players[1]
+                players[player] = data
 
-                print("Received: ", data)
-                print("Sending : ", reply)
+                if not data:
+                    print("Disconnected")
+                    break
+                else:
+                    if player == 1:
+                        reply = players[0]
+                    else:
+                        reply = players[1]
+
+                    print("Received: ", data)
+                    print("Sending : ", reply)
 
             conn.sendall(pickle.dumps(reply))
         except:

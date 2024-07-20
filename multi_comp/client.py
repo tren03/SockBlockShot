@@ -47,6 +47,7 @@ def main():
     while run:
         clock.tick(60)
         p2 = n.send(p1)
+
         print(f'opp_health : {p1.opp_health}')
         
 

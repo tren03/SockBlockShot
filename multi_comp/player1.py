@@ -63,3 +63,4 @@ class Player1():
 
     def update(self):
         self.rect = (self.x, self.y, self.width, self.height)
+
