@@ -1,0 +1,12 @@
+the atexit module helped fix a problem where resources were not released during abnormal termination - done for clients
+
+to fix problem of health bars, p1 holds p2 health bar and p2 holds p1 health bar
+
+When you encounter the issue of the address still being in use after the server has terminated, it is typically due to a lingering socket in a TIME_WAIT state. This can happen because the operating system keeps the socket around for a short period to ensure that all data has been properly transmitted and acknowledged.
+Use socket.SO_REUSEADDR ->  s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+did the above for servers - READ - https://vincent.bernat.ch/en/blog/2014-tcp-time-wait-state-linux
+
+
+
+

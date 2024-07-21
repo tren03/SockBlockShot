@@ -1,6 +1,7 @@
 import socket
 import pickle
 from _thread import *
+import atexit
 from player1 import Player1
 from player2 import Player2
 
@@ -11,19 +12,20 @@ width = 500
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
+s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
 try:
     s.bind((server, port))
 except socket.error as e:
-    str(e)
+    print(str(e))
 
 s.listen(2)
 print("Waiting for a connection, Server Started")
 
- 
-players = [Player1(10, 10, 50, 50, 'red'),Player2(0,height - 50,50,50,'blue')]
-clients = []    
+players = [Player1(10, 10, 50, 50, 'red'), Player2(0, height - 50, 50, 50, 'blue')]
+clients = []
 
-def threaded_client(conn, player):    
+def threaded_client(conn, player):
     conn.send(pickle.dumps(players[player]))
     clients.append((conn, addr))
     reply = ""
@@ -54,7 +56,11 @@ def threaded_client(conn, player):
     print("Lost connection")
     conn.close()
 
+def cleanup():
+    print("Closing server socket")
+    s.close()
 
+atexit.register(cleanup)
 
 currentPlayer = 0
 while True:
@@ -63,5 +69,5 @@ while True:
 
     start_new_thread(threaded_client, (conn, currentPlayer))
     currentPlayer += 1
-    if(currentPlayer > 1):
+    if currentPlayer > 1:
         currentPlayer = 0
