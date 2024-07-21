@@ -22,7 +22,19 @@ def display_popup(message):
     
     pygame.display.update()
 
-def redrawWindow(win, player1, player2):
+def draw_large_bullet_indicator(win, ready,player1):
+    if player1.color == 'red':
+        indicator_color = (0, 255, 0) if ready else (255, 0, 0)
+        pygame.draw.circle(win, indicator_color, (width - 30, 30), 7)
+        pygame.draw.circle(win, (0, 0, 0), (width - 30, 30), 7, 2)  # Border for the indicator
+    else:
+        indicator_color = (0, 255, 0) if ready else (255, 0, 0)
+        pygame.draw.circle(win, indicator_color, (30, height - 30), 7)
+        pygame.draw.circle(win, (0, 0, 0), (30, height - 30), 7, 2)  # Border for the indicator
+        
+
+
+def redrawWindow(win, player1, player2, ready_for_large_bullet):
     win.fill((255,255,255))
     pygame.draw.line(win, (255, 0, 0), (0, height/2), (width, height/2), width=2)
     player1.draw(win)
@@ -33,6 +45,8 @@ def redrawWindow(win, player1, player2):
 
     for bullet in player2.bullets:
         bullet.draw(win)
+
+    draw_large_bullet_indicator(win, ready_for_large_bullet,player1)
     pygame.display.update()
 
 def cleanup():
@@ -51,6 +65,12 @@ def main():
 
     clock = pygame.time.Clock()
 
+    shooting_interval = 500  # Interval between bullets in milliseconds
+    large_bullet_interval = 5000  # Interval for large bullets in milliseconds
+    last_bullet_time = pygame.time.get_ticks()  # Time when the last bullet was shot
+    last_large_bullet_time = pygame.time.get_ticks()  # Time when the last large bullet was shot
+    key_press_start = None  # To track when space key was first pressed
+
     while run:
         clock.tick(60)
         p2 = n.send(p1)
@@ -60,64 +80,58 @@ def main():
             break
 
         print(f'opp_health : {p1.opp_health}')
-        
+
+        current_time = pygame.time.get_ticks()
+
+        # Check if it's time to allow shooting a large bullet
+        can_shoot_large_bullet = current_time - last_large_bullet_time >= large_bullet_interval
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-                pygame.quit()          
+                pygame.quit()
 
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and p1.can_shoot:
-                # Space key is pressed
-                s = pygame.time.get_ticks()  # Record the start time
-                print("Space pressed")
-                    
-            elif event.type == pygame.KEYUP and event.key == pygame.K_SPACE:
-                # Space key is released
-                e = pygame.time.get_ticks()  # Record the end time
-                time_held = e - s  # Calculate the duration of the key press
-                print(time_held)
-                    
-                if time_held < 1000:  # Short press
-                    # Do something for short press
-                    
-                    p1.bullets.append(Projectile(round(p1.x + p1.width // 2), round(p1.y + p1.height // 2), 6, (0, 0, 0)))             
-                    p1.can_shoot = False
-                    p1.shoot_timer = pygame.time.get_ticks()
-                        
-                elif time_held > 1000:
-                    p1.bullets.append(Projectile(round(p1.x + p1.width // 2), round(p1.y + p1.height // 2), 20, (0, 0, 0))) 
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE and p1.can_shoot:
+                    if key_press_start is None:
+                        key_press_start = pygame.time.get_ticks()  # Record the start time of space key press
+                    print("Space pressed")
+                
+                if event.key == pygame.K_k:  # Check for K key press
+                    if can_shoot_large_bullet:
+                        p1.bullets.append(Projectile(round(p1.x + p1.width // 2), round(p1.y + p1.height // 2), 15, (255, 0, 0), 30))  # Large bullet with 30 damage
+                        last_large_bullet_time = current_time
 
-                if not p1.can_shoot and pygame.time.get_ticks() - p1.shoot_timer >= p1.shoot_delay:
-                    p1.can_shoot = True
+            elif event.type == pygame.KEYUP:
+                if event.key == pygame.K_SPACE:
+                    if key_press_start is not None:
+                        key_press_end = pygame.time.get_ticks()  # Record the end time of space key release
+                        time_held = key_press_end - key_press_start  # Calculate the duration of the key press
+                        print(time_held)
+                        key_press_start = None  # Reset the key press start time
 
-        if p1.name == "player1":
-            for bullet in p1.bullets:     
-                if bullet.y < height and bullet.y > 0:
-                    bullet.y += bullet.vel
-                else:
-                    p1.bullets.remove(bullet)
+                        bullet_count = max(1, int(time_held / 1000))  # Calculate number of bullets to fire
+                        for _ in range(bullet_count):
+                            if current_time - last_bullet_time >= shooting_interval:
+                                p1.bullets.append(Projectile(round(p1.x + p1.width // 2), round(p1.y + p1.height // 2), 6, (0, 0, 0)))  # Normal bullet
+                                last_bullet_time = current_time
 
-        if p1.name == "player2":
-            for bullet in p1.bullets:     
-                if bullet.y < height and bullet.y > 0:
-                    bullet.y -= bullet.vel
-                else:
-                    p1.bullets.remove(bullet)
+        # Update bullet positions and check for collisions
+        for bullet in p1.bullets:
+            if bullet.y < height and bullet.y > 0:
+                bullet.y += bullet.vel if p1.name == "player1" else -bullet.vel
+            else:
+                p1.bullets.remove(bullet)
 
         for bullet in p1.bullets:
-            # Create a bounding rectangle for the circle projectile
             bullet_rect = pygame.Rect(bullet.x - bullet.radius, bullet.y - bullet.radius, bullet.radius * 2, bullet.radius * 2)
             p2_rect = pygame.Rect(p2.x, p2.y, p2.width, p2.height)
             if p2_rect.colliderect(bullet_rect):
                 p1.bullets.remove(bullet)
-                if p1.opp_health < 0:
-                    state = 0
+                p1.opp_health -= bullet.damage  # Reduce health by the bullet's damage
+                if p1.opp_health <= 0:
+                    p1.opp_health = 0
                     p1.opp_win_state = False
-                else:
-                    if bullet.radius == 20:
-                        p1.opp_health -= 20
-                    else:                        
-                        p1.opp_health -= 10
 
         keys = pygame.key.get_pressed()
 
@@ -128,13 +142,13 @@ def main():
         else:
             w = None
 
-        if w:
+        if w:  
             display_popup(f"{w.color} won the game \n Press q to quit")
          
             if keys[pygame.K_q]:
                 pygame.quit()
-        else:                  
+        else:
             p1.move()
-            redrawWindow(win, p1, p2)
+            redrawWindow(win, p1, p2, can_shoot_large_bullet)
 
 main()

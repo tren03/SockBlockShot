@@ -19,15 +19,11 @@ class Player2():
         self.bullets = []
         self.can_shoot = True
         self.shoot_timer = 0
-        self.shoot_delay = 90
+        self.shoot_delay = 100
         self.opp_win_state = True
 
     def draw(self, win):
-        # pygame.draw.rect(win, 'red', (0, height-health_bar_height, width, health_bar_height))
-        # # Calculate the width of the green health bar based on the player's health
-        # health_bar_width = (self.health / 100) * width
-        # pygame.draw.rect(win, 'green', (0, height-health_bar_height, health_bar_width, health_bar_height))
-        # pygame.draw.rect(win, self.color, self.rect)
+
 
 
         pygame.draw.rect(win, 'red', (0, 0, width, health_bar_height))
