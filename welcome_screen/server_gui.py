@@ -3,6 +3,8 @@ import socket
 import threading
 import time
 import json
+import os
+import signal
 
 def get_server_address():
     try:
@@ -18,6 +20,7 @@ class UDPServer:
         self.active_clients = {}  # Use a dictionary to store client addresses and IDs
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.bind(self.server_address)
+        self.server_process = None
         print(f"Server is listening on {self.server_address}")
 
     def broadcast_user_list(self):
@@ -61,11 +64,14 @@ class UDPServer:
                     if requester_address:
                         self.sock.sendto(f"ACCEPT:{acceptor_id}".encode(), requester_address)
                         self.sock.sendto(f"ACCEPT:{requester_id}".encode(), client_address)
+                        
                         # Start server.py
                         self.start_server_process()
                         # Notify clients to start their own client.py
                         time.sleep(2)
                         self.notify_clients_to_start_client()
+                elif message == "SHUTDOWN":                    
+                    self.handle_shutdown()
                 else:
                     print(f"Received message from {client_address}: {message}")
 
@@ -77,7 +83,7 @@ class UDPServer:
 
     def start_server_process(self):
         try:
-            subprocess.Popen(['python3', '../multi_comp/server.py'])
+            self.server_process = subprocess.Popen(['python3', '../multi_comp/server.py'])
             print("Started server.py")
         except Exception as e:
             print(f"Error starting server.py: {e}")
@@ -87,13 +93,33 @@ class UDPServer:
         for address in self.active_clients.keys():
             self.sock.sendto(message.encode(), address)
 
+    def handle_shutdown(self):
+        # Notify all clients about shutdown
+        shutdown_message = "SHUTDOWN"
+        for address in self.active_clients.keys():
+            self.sock.sendto(shutdown_message.encode(), address)
+        
+        # Stop the server process if it's running
+        if self.server_process:
+            self.server_process.terminate()
+            self.server_process.wait()  # Ensure it has terminated
+            print("Terminated server.py subprocess.")
+        
+        # Print message about socket status
+        print("Server process terminated. UDP server socket is still open.")
+
     def start(self):
         try:
             self.handle_client()
         except KeyboardInterrupt:
             print("\nServer shutting down...")
         finally:
-            self.sock.close()
+            # Ensure server process is terminated properly
+            if self.server_process:
+                self.server_process.terminate()
+                self.server_process.wait()
+            # Keep the UDP server socket open
+            print("UDP server is still running.")
 
 if __name__ == "__main__":
     server = UDPServer()

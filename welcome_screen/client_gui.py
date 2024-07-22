@@ -5,6 +5,7 @@ import tkinter as tk
 from tkinter import messagebox
 import atexit
 import json
+import time
 
 def get_server_address():
     try:
@@ -20,11 +21,13 @@ class UDPClient:
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.settimeout(10)  # Set a 10-second timeout for socket operations
         self.client_id = None
-        self.running = True
+        self.running = True # for recieve thread
+        self.running_monitor = False # for monitor thread
         self.receive_thread = threading.Thread(target=self.receive, daemon=True)
         self.user_list = []
         self.update_callback = None
         self.client_process = None
+        self.check_client_thread = None
 
     def send(self, message):
         self.sock.sendto(message.encode(), self.server_address)
@@ -54,9 +57,10 @@ class UDPClient:
                     if self.update_callback:
                         self.update_callback(client_id_updated=False, accepted=partner_id)
                 elif decoded_response == "START_CLIENT":
-                    # Start client.py only if it's not already running
                     if not self.client_process or self.client_process.poll() is not None:
                         self.start_client_process()
+                elif decoded_response == "SHUTDOWN":
+                    self.terminate_client_process()
                 else:
                     print(f"Server response: {decoded_response}")
             except socket.timeout:
@@ -71,7 +75,6 @@ class UDPClient:
         try:
             print(self.server_address)
             self.send("CONNECT")
-            # Basic connection check
             self.sock.recvfrom(4096)  # Blocking call to wait for server response
             self.receive_thread.start()
         except Exception as e:
@@ -85,17 +88,21 @@ class UDPClient:
     def disconnect(self):
         if self.client_id is not None:
             self.send(f"DISCONNECT:{self.client_id}")
+            print("Sending disconnect to server")
         self.running = False
-        
+
         # Only join the thread if it's alive
         if self.receive_thread.is_alive():
             try:
                 self.receive_thread.join()
             except RuntimeError:
                 print("Attempted to join the current thread. Skipping join.")
-        
+
         self.sock.close()
         print("Disconnected from server.")
+
+        # Shutdown subprocess if running
+        self.terminate_client_process()
 
     def send_request(self, target_id):
         if self.client_id:
@@ -107,11 +114,46 @@ class UDPClient:
 
     def start_client_process(self):
         try:
-            # Start client.py subprocess
             self.client_process = subprocess.Popen(['python3', '../multi_comp/client.py'])
             print("Started client.py")
+            
+
+            # Start a separate thread to check if the subprocess has terminated
+            if self.check_client_thread and self.check_client_thread.is_alive():
+                self.check_client_thread.join()
+
+            self.running_monitor = True
+            self.check_client_thread = threading.Thread(target=self.monitor_client_process, daemon=True)
+            self.check_client_thread.start()
         except Exception as e:
             print(f"Error starting client.py: {e}")
+
+    def monitor_client_process(self):
+        while self.running_monitor:
+            if self.client_process.poll() is not None:
+                print("client.py subprocess has ended. Sending shutdown message to server.")
+                self.send("SHUTDOWN")
+                # Optionally restart the process if needed
+                # self.start_client_process()
+                break
+            time.sleep(1)  # Check every second
+
+    def terminate_client_process(self):
+        # Signal the monitoring thread to stop, if it is running
+        if self.check_client_thread and self.check_client_thread.is_alive():
+            self.running_monitor = False  # This will signal the monitoring thread to stop
+            self.check_client_thread.join()  # Wait for the thread to finish
+            print("Monitoring thread has been stopped.")
+
+        if self.client_process and self.client_process.poll() is None:
+            self.client_process.terminate()
+            self.client_process.wait()  # Ensure it has terminated
+            print("Terminated client.py subprocess.")
+
+        # If needed, restart the receive loop
+        if not self.receive_thread.is_alive():
+            self.receive_thread = threading.Thread(target=self.receive, daemon=True)
+            self.receive_thread.start()
 
 class Application(tk.Tk):
     def __init__(self, client):
