@@ -5,6 +5,7 @@ import tkinter as tk
 from tkinter import messagebox
 import atexit
 import os
+import time
 
 class UDPClient:
     def __init__(self, server_ip='172.17.0.1', server_port=5556):
@@ -45,7 +46,6 @@ class UDPClient:
                     if self.update_callback:
                         self.update_callback(client_id_updated=False, accepted=partner_id)
                 elif decoded_response == "START_CLIENT":
-                    # Start client.py only if it's not already running
                     if not self.client_process or self.client_process.poll() is not None:
                         self.start_client_process()
                 else:
@@ -59,10 +59,18 @@ class UDPClient:
         if self.client_id is None:
             self.send("CONNECT")
             self.receive_thread.start()
-        
+            return self.wait_for_id()
+
+    def wait_for_id(self, timeout=5):
+        for _ in range(timeout * 10):
+            if self.client_id:
+                return True
+            time.sleep(0.1)
+        return False
+
     def request_user_list(self):
         self.send("GET")
-        
+
     def disconnect(self):
         if self.client_id is not None:
             self.send(f"DISCONNECT:{self.client_id}")
@@ -81,11 +89,11 @@ class UDPClient:
 
     def start_client_process(self):
         try:
-            # Start client.py subprocess
             self.client_process = subprocess.Popen(['python3', '../multi_comp/client.py'])
             print("Started client.py")
         except Exception as e:
             print(f"Error starting client.py: {e}")
+
 
 class Application(tk.Tk):
     def __init__(self, client):
@@ -115,9 +123,13 @@ class Application(tk.Tk):
         self.request_button.place(relx=0.5, rely=0.85, anchor=tk.CENTER)
 
     def on_button_click(self):
-        self.client.connect()
-        self.client.request_user_list()
-        tk.messagebox.showinfo("Info", "Connected to server. Checking user list...")
+        self.button.config(state=tk.DISABLED)
+        if self.client.connect():
+            self.client.request_user_list()
+            tk.messagebox.showinfo("Info", "Connected to server. Checking user list...")
+        else:
+            tk.messagebox.showerror("Error", "Failed to connect to server.")
+            self.button.config(state=tk.NORMAL)
         
     def update_ui(self, client_id_updated=False, request=None, accepted=None):
         if client_id_updated:
