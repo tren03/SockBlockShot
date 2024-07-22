@@ -4,7 +4,7 @@ import time
 import json
 def get_server_address():
     try:
-        with open('config.json', 'r') as f:
+        with open('../config/config.json', 'r') as f:
             config = json.load(f)
             return config.get('server_address', '')
     except FileNotFoundError:
