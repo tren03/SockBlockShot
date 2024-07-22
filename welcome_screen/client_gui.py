@@ -7,7 +7,7 @@ import atexit
 import os
 
 class UDPClient:
-    def __init__(self, server_ip='172.17.0.1', server_port=5556):
+    def __init__(self, server_ip='192.168.86.45', server_port=5556):
         self.server_address = (server_ip, server_port)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.client_id = None

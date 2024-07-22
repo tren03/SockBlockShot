@@ -4,7 +4,7 @@ import threading
 import time
 
 class UDPServer:
-    def __init__(self, host='172.17.0.1', port=5556):
+    def __init__(self, host='192.168.86.45', port=5556):
         self.server_address = (host, port)
         self.active_clients = {}  # Use a dictionary to store client addresses and IDs
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
