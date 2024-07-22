@@ -2,9 +2,18 @@ import subprocess
 import socket
 import threading
 import time
+import json
+
+def get_server_address():
+    try:
+        with open('config.json', 'r') as f:
+            config = json.load(f)
+            return config.get('server_address', '')
+    except FileNotFoundError:
+        return ''
 
 class UDPServer:
-    def __init__(self, host='192.168.86.45', port=5556):
+    def __init__(self, host=get_server_address(), port=5556):
         self.server_address = (host, port)
         self.active_clients = {}  # Use a dictionary to store client addresses and IDs
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

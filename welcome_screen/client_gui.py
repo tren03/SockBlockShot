@@ -5,9 +5,17 @@ import tkinter as tk
 from tkinter import messagebox
 import atexit
 import os
+import json
+def get_server_address():
+    try:
+        with open('config.json', 'r') as f:
+            config = json.load(f)
+            return config.get('server_address', '')
+    except FileNotFoundError:
+        return ''
 
 class UDPClient:
-    def __init__(self, server_ip='192.168.86.45', server_port=5556):
+    def __init__(self, server_ip=get_server_address(), server_port=5556):
         self.server_address = (server_ip, server_port)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.client_id = None
