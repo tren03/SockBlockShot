@@ -4,8 +4,8 @@ import threading
 import tkinter as tk
 from tkinter import messagebox
 import atexit
-import os
 import json
+
 def get_server_address():
     try:
         with open('../config/config.json', 'r') as f:
@@ -18,6 +18,7 @@ class UDPClient:
     def __init__(self, server_ip=get_server_address(), server_port=5556):
         self.server_address = (server_ip, server_port)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sock.settimeout(10)  # Set a 10-second timeout for socket operations
         self.client_id = None
         self.running = True
         self.receive_thread = threading.Thread(target=self.receive, daemon=True)
@@ -58,24 +59,41 @@ class UDPClient:
                         self.start_client_process()
                 else:
                     print(f"Server response: {decoded_response}")
+            except socket.timeout:
+                print("Socket timeout. Retrying...")
+                continue
             except Exception as e:
                 print(f"Error: {e}")
                 self.disconnect()
                 break
 
     def connect(self):
-        if self.client_id is None:
+        try:
+            print(self.server_address)
             self.send("CONNECT")
+            # Basic connection check
+            self.sock.recvfrom(4096)  # Blocking call to wait for server response
             self.receive_thread.start()
-        
+        except Exception as e:
+            print(f"Connection failed: {e}")
+            return False
+        return True
+
     def request_user_list(self):
         self.send("GET")
-        
+
     def disconnect(self):
         if self.client_id is not None:
             self.send(f"DISCONNECT:{self.client_id}")
         self.running = False
-        self.receive_thread.join()
+        
+        # Only join the thread if it's alive
+        if self.receive_thread.is_alive():
+            try:
+                self.receive_thread.join()
+            except RuntimeError:
+                print("Attempted to join the current thread. Skipping join.")
+        
         self.sock.close()
         print("Disconnected from server.")
 
@@ -123,10 +141,12 @@ class Application(tk.Tk):
         self.request_button.place(relx=0.5, rely=0.85, anchor=tk.CENTER)
 
     def on_button_click(self):
-        self.client.connect()
-        self.client.request_user_list()
-        tk.messagebox.showinfo("Info", "Connected to server. Checking user list...")
-        
+        if self.client.connect():
+            self.client.request_user_list()
+            tk.messagebox.showinfo("Info", "Connected to server. Checking user list...")
+        else:
+            tk.messagebox.showerror("Error", "Failed to connect to the server.")
+
     def update_ui(self, client_id_updated=False, request=None, accepted=None):
         if client_id_updated:
             self.after(0, self.update_label)
