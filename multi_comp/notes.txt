@@ -7,6 +7,6 @@ Use socket.SO_REUSEADDR ->  s = socket.socket(socket.AF_INET, socket.SOCK_STREAM
                             s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 did the above for servers - READ - https://vincent.bernat.ch/en/blog/2014-tcp-time-wait-state-linux
 
-
+update ip in network.py server.py and the both gui files 
 
 

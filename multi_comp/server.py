@@ -5,7 +5,16 @@ import atexit
 from player1 import Player1
 from player2 import Player2
 
-server = "172.17.0.1"
+import json
+def get_server_address():
+    try:
+        with open('config.json', 'r') as f:
+            config = json.load(f)
+            return config.get('server_address', '')
+    except FileNotFoundError:
+        return ''
+
+server = get_server_address()
 port = 5555
 height = 500
 width = 500

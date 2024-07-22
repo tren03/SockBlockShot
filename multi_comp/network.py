@@ -1,12 +1,21 @@
 import socket
 import pickle
 import time
+import json
+def get_server_address():
+    try:
+        with open('config.json', 'r') as f:
+            config = json.load(f)
+            return config.get('server_address', '')
+    except FileNotFoundError:
+        return ''
+
 
 
 class Network:
     def __init__(self):
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server = "172.17.0.1"
+        self.server = get_server_address()
         self.port = 5555
         self.addr = (self.server, self.port)
         self.p = self.connect()
