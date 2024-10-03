@@ -69,13 +69,13 @@ https://github.com/user-attachments/assets/d6abc66c-b8f9-4875-b270-90e7c4c6cd00
      ```
 
 
-### How it works
+## How it works
 
-#### Server
+### Server
 The server listens for incoming UDP connections on a specified port, assigns unique client IDs, and manages multiple clients simultaneously. For each session between clients, a separate subprocess is spawned, and communication within that session is handled using TCP for reliable data transmission.
 
-#### Client
+### Client
 The client connects to the server via UDP using the server’s IP address and port number. Once connected, clients can request sessions with other clients, send/receive messages, and participate in session-based interactions using TCP for the game or communication sessions.
 
-#### Communication Protocol
+### Communication Protocol
 The project uses UDP for client-server communication and TCP within game sessions for reliable, session-specific communication. The server manages sessions, broadcasts user lists, and handles client requests, ensuring efficient and scalable multiplayer interactions.
