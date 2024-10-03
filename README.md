@@ -17,14 +17,6 @@ https://github.com/user-attachments/assets/d6abc66c-b8f9-4875-b270-90e7c4c6cd00
 
 
 
-## Table of Contents
-- [Introduction](#introduction)
-- [Architecture](#architecture)
-- [Installation](#installation)
-- [Usage](#usage)
-
-
-
 ## Architecture
 
 ### The Main Game logic
